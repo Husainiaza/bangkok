@@ -34,8 +34,11 @@ DallasTemperature DS18B20(&oneWire);
 const char* password = ""; */
 
 //------WIFI AZA---
-const char* ssid = "Alias FredoX_2.4GHz@unifi";  
-const char* password = "0135335045";
+//const char* ssid = "Alias FredoX_2.4GHz@unifi";  
+//const char* password = "0135335045";
+
+const char* ssid = "GalaxyA";  
+const char* password = "1234509876";
 
 //-----WiFi KKSBJ --------------------------------
 //const char* ssid = "GUEST";  
