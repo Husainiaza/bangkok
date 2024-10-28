@@ -1,0 +1,114 @@
+#include <Wire.h>
+#include <SPI.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+
+//---Actuator and Relay  pin connection---
+#define relay01 27 
+#define relay02 26
+#define buzzer 25
+#define tiltSensor  4
+#define sensorLDR 36
+#define SENSOR_PIN  15 // DS18B20 sensor's DAQ pin
+
+
+// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+
+OneWire oneWire(SENSOR_PIN);
+DallasTemperature DS18B20(&oneWire);
+
+//---istihar variable yang hendak digunakan
+float tempC; // temperature in Celsius
+float tempF; // temperature in Fahrenheit
+
+void setup() {
+  pinMode(relay01,OUTPUT);
+  pinMode(relay02,OUTPUT);
+  pinMode(buzzer,OUTPUT);
+  pinMode(tiltSensor, INPUT);
+ 
+  Serial.begin(115200); // initialize serial
+  DS18B20.begin();      // initialize the DS18B20 sensor
+
+if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3D for 128x64
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;);
+  }
+ 
+   
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+  display.println("ESP32 Project BOARD");
+  display.display();
+  delay(2000);
+}
+
+void loop() {
+
+  DS18B20.requestTemperatures();       // send the command to get temperatures
+  tempC = DS18B20.getTempCByIndex(0);  // read temperature in °C
+  tempF = tempC * 9 / 5 + 32; // convert °C to °F
+
+  Serial.print("Temperature: ");
+  Serial.print(tempC);    // print the temperature in °C
+  Serial.print("°C");
+  Serial.print("  ~  ");  // separator between °C and °F
+  Serial.print(tempF);    // print the temperature in °F
+  Serial.println("°F");
+
+  digitalWrite(buzzer,HIGH);
+  digitalWrite(relay01,HIGH);
+  digitalWrite(relay02,HIGH);
+  delay (100);
+  digitalWrite(buzzer,LOW);
+  digitalWrite(relay01,LOW);
+  digitalWrite(relay02,LOW);
+  delay (500);
+  display.clearDisplay();
+
+  int dataLDR = analogRead(sensorLDR);
+  Serial.print("Data LDR: ");
+  Serial.println(dataLDR);
+
+  int tiltState = digitalRead(tiltSensor);
+  Serial.println(tiltState);
+  // check if the pushbutton is pressed. If it is, the buttonState is HIGH:
+  if (tiltState == HIGH) {
+    // turn LED on:
+    digitalWrite(buzzer, HIGH);
+    
+  // client.publish("fishfeeder/tanklid", "Food Lid is OPEN");
+  } else {
+    // turn LED off:
+    digitalWrite(buzzer, LOW);
+   // client.publish("fishfeeder/tanklid", "Food Lid is CLOSE");
+  }
+
+  display.setTextSize(1);
+  display.setTextColor(WHITE,BLACK);
+  display.setCursor(0,0);
+  display.println(" IoT Project Board");
+  display.setCursor(0,10);
+  display.println("K. Komuniti Sbg Jaya");
+  display.setCursor(0,25);
+  display.print("BACAAN SUHU :");
+  display.print(tempC,1);
+   
+  display.setCursor(0,35);
+  display.print("BACAAN TILT :");
+  display.print(tiltState);
+
+  display.setCursor(0,45);
+  display.print("BACAAN Var :");
+  display.print(dataLDR);
+
+  display.display();  
+}
